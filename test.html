@@ -1,32 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title></title>
-    <style>
-        body {
-           margin:0;
-        }
-        .cover {
-            position:relative;
-            width:400px;
-            height:600px;
-            background:gray;
-            overflow:hidden;
-        }
-    </style>
-    <script src="index.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test</title>
+  <script src="index.js"></script>
+
+  <style>
+      
+    html, body {
+      margin: 0;
+      height: 100%;
+    }
+
+    .container {
+      position: relative;
+      width: 50%;
+      height: 50%;
+      background: #EEE;
+      float: left;
+      overflow: hidden;
+      border:10px solid white;
+      box-sizing: border-box;
+    }
+
+  </style>
 </head>
 <body>
-    
-    <div class="cover">
-        <img id="happy" src="https://avatars1.githubusercontent.com/u/8438508" alt="">
-    </div>
 
-    <script>
-    
-        aspect.fit(document.getElementById("happy"));
+  <div class="container">
+    <img src="http://pipsum.com/400x300.jpg" alt="" id="test1">
+  </div>
+  <div class="container">
+    <img src="http://pipsum.com/400x300.jpg" alt="" id="test2">
+  </div>
+  <div class="container">
+    <img src="http://pipsum.com/400x300.jpg" alt="" id="test3">
+  </div>
+  <div class="container">
+    <img src="http://pipsum.com/400x300.jpg" alt="" id="test4">
+  </div>
 
-    </script>
+  <script>
+
+    //Contain
+    var test1 = aspect.createRatio(document.getElementById('test1'), false);
+
+    //Contain with auto cover. Cover if ratio diff is less than 5%.
+    var test2 = aspect.createRatio(document.getElementById('test2'), false);
+    test2.autoCoverThreshold = 0.05;
+
+    //Cover.
+    var test3 = aspect.createRatio(document.getElementById('test3'), true);
+
+    //Cover with constraints. Don't scale more than 125%. Same as at least show 80% of the image.
+    var test4 = aspect.createRatio(document.getElementById('test4'), true);
+    test4.constrainWidth = 1 / 0.8;
+    test4.constrainHeight = 1 / 0.8;
+
+  </script>
+
 </body>
 </html>

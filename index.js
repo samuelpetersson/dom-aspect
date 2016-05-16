@@ -1,66 +1,130 @@
 var aspect = (function(){
 
-    function Ratio(element, mode) {
-        this.element = element;     
-        this.mode = mode;
-        //default alignX = 0.5
-        //default alignY = 0.5
-        //this.init();
-        var scope = this;
-        element.onload = function() { scope.init(); };
+  var addEvent = function(target, event) {
+    target.addEventListener(event, this.eventHandler);
+  };
+  var removeEvent = function(target, event) {
+    target.removeEventListener(event, this.eventHandler);
+  };
+
+  function Ratio(element, cover, autoResize) {
+    this.element = element;
+    this.cover = cover !== false;
+    this.autoCoverThreshold = 0;
+
+    this.alignX = 0.5;
+    this.alignY = 0.5;
+
+    this.constrainWidth = 0;
+    this.constrainHeight = 0;
+    
+    this.reset();
+
+    var ratio = this;
+    this.eventHandler = function(event) {
+      event = event || window.event;
+      switch(event.type) {
+        case "load":
+          ratio.reset();
+          break;
+        case "resize":
+          ratio.layout();
+          break;
+      }
+    };
+
+    if(element.nodeName == "IMG") {
+      addEvent.call(this, element, "load");
+    }
+    if(autoResize !== false) {
+      addEvent.call(this, window, "resize");
+    }
+  }
+
+  Ratio.prototype.reset = function(ratio) {
+    var element = this.element;
+    element.style.width = null;
+    element.style.height = null;
+    this.ratio = ratio || (element.clientWidth / element.clientHeight);
+    this.layout();
+  };
+
+  Ratio.prototype.layout = function() {
+    var elementRatio = this.ratio;
+
+    if(isNaN(elementRatio)) {
+      return;
     }
 
-    Ratio.prototype.init = function() {
-       var element = this.element;
-       delete element.width;
-       delete element.height;
-       console.log("init", element.clientWidth, element);
-       this.ratio = element.clientWidth / element.clientHeight;
-       this.layout();
-    };
+    var parent = this.element.parentNode;
 
-    Ratio.prototype.layout = function() {
-        var elementRatio = this.ratio;
+    if(!parent) {
+      return;
+    }
+    
+    var parentWidth = parent.clientWidth;
+    var parentHeight = parent.clientHeight;
+    var parentRatio = parentWidth / parentHeight;
 
-        console.log("layout", elementRatio);
-        if(isNaN(elementRatio)) {
-            return;
-        }
+    var cover = this.cover || Math.abs(elementRatio - parentRatio) < this.autoCoverThreshold;
 
-        var mode = this.mode;
+    var elementWidth = parentWidth;
+    var elementHeight = parentWidth / elementRatio;
+    
+    if(!cover == (elementRatio < parentRatio)) {
+      elementWidth = parentHeight * elementRatio;
+      elementHeight = parentHeight;
+    }
 
-        var parent = this.element.parentNode;
-        var parentWidth = parent.clientWidth;
-        var parentHeight = parent.clientHeight;
-        var parentRatio = parentWidth / parentHeight;
+    var constrainWidth = this.constrainWidth;
+    var constrainHeight = this.constrainHeight;
 
-        var elementWidth = parentWidth;
-        var elementHeight = parentWidth / elementRatio;
+    if(constrainWidth && elementWidth > parentWidth * constrainWidth) {
+      elementWidth = parentWidth * constrainWidth;
+      elementHeight = elementWidth / elementRatio;
+    }
+    if(constrainHeight && elementHeight > parentHeight * constrainHeight) {
+      elementHeight = parentHeight * constrainHeight;
+      elementWidth = elementHeight * elementRatio;
+    }
 
-        if(mode == "fill" && elementRatio > parentRatio || mode == "fit" && elementRatio < parentRatio) {
-            elementWidth = parentHeight * elementRatio;
-            elementHeight = parentHeight;
-        }
+    var style = this.element.style;
 
-        var alignX = this.alignX || 0.5;
-        var alignY = this.alignY || 0.5;
-        var style = this.element.style;
-        console.log(elementWidth, elementHeight);
-        
-        style.position = "absolute";
-        style.width = elementWidth + "px";
-        style.height = elementHeight + "px";
-        style.left = parentWidth * alignX - elementWidth * alignX + "px";
-        style.top = parentHeight * alignY - elementHeight * alignY + "px";
-    };
+    var ax = this.alignX;
+    var ay = this.alignY;
 
+    var tx = parentWidth * ax - elementWidth * ax;
+    var ty = parentHeight * ay - elementHeight * ay;
 
-    return {
-        fill:function(element) {
-            return new Ratio(element, "fill");
-        },
-        fit:function(element) {
-            return new Ratio(element, "fit");
-        }
-    };
+    if(this.useTransform) {
+      var sx = elementWidth / this.element.clientWidth;
+      var sy = elementHeight / this.element.clientHeight;
+      var transform = "matrix("+ sx +", 0, 0, "+ sy +", "+ tx +", "+ ty +")";
+      style.transform = transform;
+      style.transformOrigin = "0 0";
+    }
+    else {      
+      style.width = elementWidth + "px";
+      style.height = elementHeight + "px";
+      style.marginLeft = tx + "px";
+      style.marginTop = ty + "px";
+    }
+
+  };
+
+  Ratio.prototype.dispose = function() {
+    removeEvent.call(this, this.element, "load");
+    removeEvent.call(this, window, "resize");
+  };
+
+  return {
+    createRatio:function(element, cover, autoResize) {
+      return new Ratio(element, cover, autoResize);
+    }
+  };
+
 })();
+
+if(typeof module !== "undefined") {
+  module.exports = viewport;
+}
