@@ -22,8 +22,8 @@ ratio.autoCoverThreshold = 0.1;
 ```javascript
 //Create a ratio that will at most scale element size to 125% of parent size.
 var ratio = aspect.createRatio(element);
-ratio.contrainWidth = 1.25;
-ratio.contrainHeight = 1.25;
+ratio.constrainWidth = 1.25;
+ratio.constrainHeight = 1.25;
 ```
 
 ```javascript
