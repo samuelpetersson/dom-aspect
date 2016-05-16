@@ -8,7 +8,7 @@ Maintain element ratio
 var ratio = aspect.createRatio(element);
 
 //Dispose (remove element listeners etc.).
-ratio.dipose();
+ratio.dispose();
 ```
 
 ### Examples
