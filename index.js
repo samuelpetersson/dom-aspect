@@ -126,5 +126,5 @@ var aspect = (function(){
 })();
 
 if(typeof module !== "undefined") {
-  module.exports = viewport;
+  module.exports = aspect;
 }
